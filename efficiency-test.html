@@ -1,0 +1,57 @@
+<html>
+<head>
+<title></title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script type="text/javascript" src="advanced-geocoder.js"></script>
+<script type="text/javascript" src="Data/testSet.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+
+var property = "SubDist_NE";
+var geocoder;
+d3.json("Data/Admin3.json", function(err, collection) {
+    // initialize the geocoder
+    geocoder = d3.geo.rasterCoder()
+        .size(960)
+        .features(collection.features);
+    // just for debugging
+    document.body.appendChild(geocoder.canvas());
+    // some LA locations
+
+	
+	var total = 0;
+	var numCorrect = 0;
+	var numIncorrect = 0;
+	
+    d3.select('body').selectAll('p')
+        .data(testDataSet)
+      .enter().insert('p', 'canvas')
+        .text(function(d) {
+			total++;
+			
+            var neighborhood = geocoder(d.coords);
+			if (neighborhood) {
+				var answer = neighborhood.properties[property];
+				
+				if (answer === d.answer) numCorrect++;
+				else numIncorrect++;
+				
+				
+				return JSON.stringify(d.coords) + ' : ' + (neighborhood && answer);
+			}
+			else {
+				numIncorrect ++;
+			}
+        })
+	
+	console.log("Printing metrics");
+	console.log("Total: "+total);
+	console.log("Correct: "+numCorrect);
+	console.log("Incorrect: "+numIncorrect);
+	console.log("Accuracy: "+(d3.round(numCorrect/total, 3))+"%");
+});
+</script>
+</body>
+</html>
